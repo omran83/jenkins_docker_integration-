@@ -1,0 +1,41 @@
+pipeline{
+    agent{
+        docker{
+            image "httpd"
+            label "docker1"
+        }
+    }
+    parameters {
+        string(defaultValue: 'testfile', description: 'what file should i write ?', name:'File_To_Create')
+        string(defaultValue: 'heloo world', description: 'What should i write ?', name:'To_write')    
+      } 
+      
+    triggers{
+        pollSCM('* * * * *')
+    }
+    stages{
+        stage("Git pull"){
+            steps{
+                 git 'git@github.com:omran83/terraform01.git'
+            }
+        }
+        stage ("hello"){
+            steps{
+                ws("${workspace}/tmp"){
+                    sh '''
+                    set +xe
+                    echo hello
+                    touch file
+                    mkdir folder
+                    cat /etc/passwd > users
+                    '''
+                }
+            }
+        }
+        stage("writ to a file"){
+            steps{
+                writeFile file: 'testfile', text: 'this is test'
+            }
+        }
+    }
+}
